@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Post a Need - NGO Connect</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+    <header>
+        <div class="container">
+            <nav>
+                <a href="index.html" class="logo">NGO Connect</a>
+                <div class="nav-links">
+                    <a href="browse-needs.html">Browse Needs</a>
+                    <a href="post-need.html" class="btn-nav">Post a Need</a>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container" style="padding: 3rem 0;">
+        <div style="max-width: 600px; margin: 0 auto;">
+            <h1 class="text-center" style="margin-bottom: 2rem;">Post a New Need</h1>
+
+            <form onsubmit="submitNeed(event)" class="card">
+                <h3 class="mb-4">NGO Details</h3>
+                <div class="form-group">
+                    <label>NGO Name</label>
+                    <input type="text" name="ngoName" required placeholder="e.g. Helping Hands Foundation">
+                </div>
+                <div class="form-group">
+                    <label>NGO Email (Private key to view offers)</label>
+                    <input type="email" name="ngoEmail" required placeholder="contact@ngo.org">
+                    <small style="color:red; font-size:0.85rem;">Important: You will need this email to view offers
+                        later.</small>
+                </div>
+                <div class="form-group">
+                    <label>Phone Number</label>
+                    <input type="tel" name="ngoPhone" required placeholder="+1 234 567 890">
+                </div>
+                <div class="form-group">
+                    <label>City</label>
+                    <select name="city" required>
+                        <option value="">Select City</option>
+                        <option value="New York">New York</option>
+                        <option value="London">London</option>
+                        <option value="Mumbai">Mumbai</option>
+                        <option value="Delhi">Delhi</option>
+                        <option value="Bangalore">Bangalore</option>
+                        <option value="Lagos">Lagos</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+
+                <h3 class="mb-4 mt-8">Need Details</h3>
+                <div class="form-group">
+                    <label>Category</label>
+                    <select name="category" required>
+                        <option value="Worker">Worker / Volunteer</option>
+                        <option value="Furniture">Furniture</option>
+                        <option value="Electronics">Electronics</option>
+                        <option value="Books">Books / Stationaries</option>
+                        <option value="Medical">Medical Supplies</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Need Title</label>
+                    <input type="text" name="title" required placeholder="e.g. Need 20 Chairs for School">
+                </div>
+                <div class="form-group">
+                    <label>Description</label>
+                    <textarea name="description" rows="5" required
+                        placeholder="Describe what you need in detail..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Image (Optional)</label>
+                    <input type="file" name="image" accept="image/*">
+                </div>
+
+                <div class="mt-4">
+                    <button type="submit" class="btn" style="width: 100%;">Submit Need</button>
+                </div>
+            </form>
+        </div>
+    </main>
+    <script src="js/app.js"></script>
+</body>
+
+</html>
