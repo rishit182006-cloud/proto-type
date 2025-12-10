@@ -2,8 +2,15 @@ const express = require('express');
 const router = express.Router();
 const multer = require('multer');
 const path = require('path');
-const Need = require('../models/Need');
-const Offer = require('../models/Offer');
+
+// IN-MEMORY STORAGE
+// Since we removed MongoDB, we will store data in these arrays.
+// WARNING: All data is lost when the server restarts.
+let needs = [];
+let offers = [];
+
+// Helper to generate IDs
+const generateId = () => Date.now().toString() + Math.random().toString(36).substr(2, 9);
 
 // Multer Configuration
 const storage = multer.diskStorage({
@@ -11,18 +18,19 @@ const storage = multer.diskStorage({
         cb(null, 'uploads/');
     },
     filename: function (req, file, cb) {
-        cb(null, Date.now() + path.extname(file.originalname)); // Append extension
+        cb(null, Date.now() + path.extname(file.originalname));
     }
 });
 const upload = multer({ storage: storage });
 
 // 1. Create a Need
-router.post('/needs/create', upload.single('image'), async (req, res) => {
+router.post('/needs/create', upload.single('image'), (req, res) => {
     try {
         const { ngoName, ngoEmail, ngoPhone, city, category, title, description } = req.body;
         const imageUrl = req.file ? `/uploads/${req.file.filename}` : null;
 
-        const newNeed = new Need({
+        const newNeed = {
+            _id: generateId(),
             ngoName,
             ngoEmail,
             ngoPhone,
@@ -30,10 +38,14 @@ router.post('/needs/create', upload.single('image'), async (req, res) => {
             category,
             title,
             description,
-            imageUrl
-        });
+            imageUrl,
+            createdAt: new Date()
+        };
 
-        await newNeed.save();
+        needs.push(newNeed);
+        // Sort needs by date (newest first)
+        needs.sort((a, b) => b.createdAt - a.createdAt);
+
         res.status(201).json({ message: 'Need created successfully', need: newNeed });
     } catch (err) {
         console.error(err);
@@ -42,15 +54,20 @@ router.post('/needs/create', upload.single('image'), async (req, res) => {
 });
 
 // 2. Get All Needs (with filters)
-router.get('/needs', async (req, res) => {
+router.get('/needs', (req, res) => {
     try {
         const { city, category } = req.query;
-        let query = {};
-        if (city) query.city = city;
-        if (category) query.category = category;
 
-        const needs = await Need.find(query).sort({ createdAt: -1 });
-        res.json(needs);
+        let filteredNeeds = needs;
+
+        if (city) {
+            filteredNeeds = filteredNeeds.filter(n => n.city === city);
+        }
+        if (category) {
+            filteredNeeds = filteredNeeds.filter(n => n.category === category);
+        }
+
+        res.json(filteredNeeds);
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: 'Server error fetching needs' });
@@ -58,9 +75,9 @@ router.get('/needs', async (req, res) => {
 });
 
 // 3. Get Single Need
-router.get('/needs/:id', async (req, res) => {
+router.get('/needs/:id', (req, res) => {
     try {
-        const need = await Need.findById(req.params.id);
+        const need = needs.find(n => n._id === req.params.id);
         if (!need) return res.status(404).json({ error: 'Need not found' });
         res.json(need);
     } catch (err) {
@@ -70,20 +87,27 @@ router.get('/needs/:id', async (req, res) => {
 });
 
 // 4. Create Offer
-router.post('/needs/:id/offer', async (req, res) => {
+router.post('/needs/:id/offer', (req, res) => {
     try {
         const { donatorName, donatorEmail, donatorPhone, message } = req.body;
         const needId = req.params.id;
 
-        const newOffer = new Offer({
+        // Verify need exists
+        const needExists = needs.some(n => n._id === needId);
+        if (!needExists) return res.status(404).json({ error: 'Need not found' });
+
+        const newOffer = {
+            _id: generateId(),
             needId,
             donatorName,
             donatorEmail,
             donatorPhone,
-            message
-        });
+            message,
+            createdAt: new Date()
+        };
 
-        await newOffer.save();
+        offers.push(newOffer);
+
         res.status(201).json({ message: 'Offer submitted successfully' });
     } catch (err) {
         console.error(err);
@@ -92,12 +116,12 @@ router.post('/needs/:id/offer', async (req, res) => {
 });
 
 // 5. View Offers (NGO Only - Email Check)
-router.post('/needs/:id/view-offers', async (req, res) => {
+router.post('/needs/:id/view-offers', (req, res) => {
     try {
         const { ngoEmail } = req.body;
         const needId = req.params.id;
 
-        const need = await Need.findById(needId);
+        const need = needs.find(n => n._id === needId);
         if (!need) return res.status(404).json({ error: 'Need not found' });
 
         // AUTH CHECK: specific matching logic
@@ -105,8 +129,11 @@ router.post('/needs/:id/view-offers', async (req, res) => {
             return res.status(403).json({ error: 'Unauthorized: Email does not match the NGO who posted this need.' });
         }
 
-        const offers = await Offer.find({ needId }).sort({ createdAt: -1 });
-        res.json(offers);
+        const relevantOffers = offers.filter(o => o.needId === needId);
+        // Sort offers by date
+        relevantOffers.sort((a, b) => b.createdAt - a.createdAt);
+
+        res.json(relevantOffers);
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: 'Server error fetching offers' });

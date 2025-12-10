@@ -1,5 +1,6 @@
+```javascript
 const express = require('express');
-const mongoose = require('mongoose');
+// const mongoose = require('mongoose'); // Removed for in-memory version
 const cors = require('cors');
 const helmet = require('helmet');
 const path = require('path');
@@ -8,7 +9,7 @@ require('dotenv').config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/ngo-platform';
+// const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/ngo-platform'; // Not needed
 
 // Ensure uploads directory exists
 const uploadDir = path.join(__dirname, 'uploads');
@@ -28,10 +29,10 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-// Database Connection
-mongoose.connect(MONGODB_URI)
-    .then(() => console.log('MongoDB Connected'))
-    .catch(err => console.log('MongoDB Connection Error:', err));
+// Database Connection REMOVED for In-Memory Version
+// mongoose.connect(MONGODB_URI)
+//     .then(() => console.log('MongoDB Connected'))
+//     .catch(err => console.log('MongoDB Connection Error:', err));
 
 // Routes
 const apiRoutes = require('./routes/api');
