@@ -1,4 +1,4 @@
-```javascript
+
 const express = require('express');
 // const mongoose = require('mongoose'); // Removed for in-memory version
 const cors = require('cors');
@@ -49,5 +49,5 @@ app.get('*', (req, res) => {
 });
 
 app.listen(PORT, () => {
-    console.log(`Server running on http://localhost:${PORT}`);
+    console.log('Server running on http://localhost:' + PORT);
 });
